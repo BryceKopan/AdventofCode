@@ -5,21 +5,19 @@ def sumPartNumbers(nEngineSchematic):
         startIndex = None
         endIndex = None
         for charI, char in enumerate(nEngineSchematic[lineI]):
-            if char.isnumeric() and not startIndex:
+            if char.isnumeric() and startIndex is None:
                 startIndex = charI
-            if charI == len(nEngineSchematic[lineI]) - 1 and startIndex:
+            if charI == len(nEngineSchematic[lineI]) - 1 and startIndex is not None:
                 endIndex = charI
-            if not char.isnumeric() and startIndex:
+            if not char.isnumeric() and startIndex is not None:
                 endIndex = charI - 1
 
-            if startIndex and endIndex:
-                print(startIndex, endIndex)
+            if startIndex is not None and endIndex is not None:
                 if isPartNumber(lineI, startIndex, endIndex, nEngineSchematic):
                     partNumber = ''
                     for index in range(startIndex, endIndex + 1):
                         partNumber += nEngineSchematic[lineI][index]
                     sum += int(partNumber)
-                    print(partNumber)
 
                 startIndex = None
                 endIndex = None
@@ -29,13 +27,19 @@ def sumPartNumbers(nEngineSchematic):
 
 def isPartNumber(lineNumber, startIndex, endIndex, nEngineSchematic):
     foundAdjacentSymbol = False
+    startAdjacentRange = startIndex
+    endAdjacentRange = endIndex
+    if startAdjacentRange > 0:
+        startAdjacentRange -= 1
+    if endAdjacentRange != len(nEngineSchematic[lineNumber]) - 1:
+        endAdjacentRange += 1
 
-    for i in range(startIndex - 1, endIndex + 1):
+    for i in range(startAdjacentRange, endAdjacentRange + 1):
         if isPartSymbol(nEngineSchematic[lineNumber][i]):
             foundAdjacentSymbol = True
         elif lineNumber > 0 and isPartSymbol(nEngineSchematic[lineNumber - 1][i]):
             foundAdjacentSymbol = True
-        elif lineNumber < len(nEngineSchematic) - 1:
+        elif lineNumber < len(nEngineSchematic) - 1 and isPartSymbol(nEngineSchematic[lineNumber + 1][i]):
             foundAdjacentSymbol = True
 
     return foundAdjacentSymbol
@@ -58,7 +62,6 @@ def testSumPartNumbers():
                            ['.', '6', '6', '4', '.', '5', '9', '8', '.', '.']]
     testAnswer = 4361
 
-    print(sumPartNumbers(testEngineSchematic))
     return sumPartNumbers(testEngineSchematic) == testAnswer
 
 
@@ -71,10 +74,12 @@ if __name__ == "__main__":
         exit(1)
 
     engineSchematicPath = input("Enter the file path for the .txt game data:")
-    gameData = open(engineSchematicPath, 'r')
+    engineSchematicData = open(engineSchematicPath, 'r')
 
     engineSchematic = []
-    for i, line in enumerate(engineSchematic):
-        engineSchematic[i] = [char.strip() for char in line]
+    for line in engineSchematicData:
+        engineSchematic.append([char for char in line.strip()])
 
+    engineSchematicData.close()
 
+    print(sumPartNumbers(engineSchematic))
