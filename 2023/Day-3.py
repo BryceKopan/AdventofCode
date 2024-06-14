@@ -88,54 +88,61 @@ def isGear(lineNumber, index, nEngineSchematic):
     if endAdjacentRange != len(nEngineSchematic[lineNumber]) - 1:
         endAdjacentRange += 1
 
-    # possible bug (because I'm storing adjacent numbers in dict if two different but identical part numbers border the same gear it will fail)
-    # I'm using dict because a single part number bordering a gear at n places will trigger the following logic n times
     for i in range(startAdjacentRange, endAdjacentRange + 1):
         if nEngineSchematic[lineNumber][i].isnumeric():
-            adjacentNumbers[getPartNumber(lineNumber, i, nEngineSchematic)] = 1
-        elif lineNumber > 0 and nEngineSchematic[lineNumber - 1][i].isnumeric():
-            adjacentNumbers[getPartNumber(lineNumber - 1, i, nEngineSchematic)] = 1
-        elif lineNumber < len(nEngineSchematic) - 1 and nEngineSchematic[lineNumber + 1][i].isnumeric():
-            adjacentNumbers[getPartNumber(lineNumber + 1, i, nEngineSchematic)] = 1
+            partNumber, startIndex = getPartNumber(lineNumber, i, nEngineSchematic)
+            adjacentNumbers[startIndex] = partNumber
+        if lineNumber > 0 and nEngineSchematic[lineNumber - 1][i].isnumeric():
+            partNumber, startIndex = getPartNumber(lineNumber - 1, i, nEngineSchematic)
+            adjacentNumbers[startIndex * -1] = partNumber
+        if lineNumber < len(nEngineSchematic) - 1 and nEngineSchematic[lineNumber + 1][i].isnumeric():
+            partNumber, startIndex = getPartNumber(lineNumber + 1, i, nEngineSchematic)
+            adjacentNumbers[startIndex + .5] = partNumber
 
-    return len(adjacentNumbers) == 2, list(adjacentNumbers)
+    adjacentNumbers = list(adjacentNumbers.values())
+    return len(adjacentNumbers) == 2, adjacentNumbers
 
 
 def getNextGear(currentLine, currentIndex, nEngineSchematic):
+    startingIndex = currentIndex
     for l in range(currentLine, len(nEngineSchematic)):
-        for i in range(currentIndex, len(nEngineSchematic[l])):
+        for i in range(startingIndex, len(nEngineSchematic[l])):
             if nEngineSchematic[l][i] == '*':
                 bordersTwoNumbers, partNumbers = isGear(l, i, nEngineSchematic)
                 if bordersTwoNumbers:
                     return l, i, partNumbers
+        startingIndex = 0
+
 
     return None, None, None
 
 
 def getPartNumber(lineNumber, index, nEngineSchematic):
     partNumber = nEngineSchematic[lineNumber][index]
+    startIndex = index
 
     # Check chars to the left
     i = 1
     foundNonNumeric = index == 0
     while not foundNonNumeric:
-        if index - i == 0 or not nEngineSchematic[lineNumber][index - i].isnumeric():
+        if index - i < 0 or not nEngineSchematic[lineNumber][index - i].isnumeric():
             foundNonNumeric = True
         else:
             partNumber = nEngineSchematic[lineNumber][index - i] + partNumber
+            startIndex -= 1
             i += 1
 
     # Check chars to the right
     i = 1
     foundNonNumeric = index == len(nEngineSchematic[lineNumber]) - 1
     while not foundNonNumeric:
-        if index + i == len(nEngineSchematic[lineNumber]) - 1 or not nEngineSchematic[lineNumber][index + i].isnumeric():
+        if index + i > len(nEngineSchematic[lineNumber]) - 1 or not nEngineSchematic[lineNumber][index + i].isnumeric():
             foundNonNumeric = True
         else:
             partNumber = partNumber + nEngineSchematic[lineNumber][index + i]
             i += 1
 
-    return int(partNumber)
+    return int(partNumber), startIndex
 
 
 def sumGearRatio(nEngineSchematic):
@@ -145,11 +152,9 @@ def sumGearRatio(nEngineSchematic):
 
     while lineIndex is not None and gearIndex is not None:
         lineIndex, gearIndex, adjacentPartNumbers = getNextGear(lineIndex, gearIndex, nEngineSchematic)
-        print("Gear at:" + str(lineIndex) + ':' + str(gearIndex))
 
         if adjacentPartNumbers is not None:
             gearRatio = adjacentPartNumbers[0] * adjacentPartNumbers[1]
-            print(adjacentPartNumbers)
             gearRatioSum += gearRatio
             gearIndex += 1
 
@@ -170,7 +175,6 @@ def testSumGearRatio():
     testAnswer = 467835
 
     testResult = sumGearRatio(testEngineSchematic)
-    print(testResult)
     return testResult == testAnswer
 
 if __name__ == "__main__":
