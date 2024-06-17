@@ -177,6 +177,7 @@ def testSumGearRatio():
     testResult = sumGearRatio(testEngineSchematic)
     return testResult == testAnswer
 
+
 if __name__ == "__main__":
     print("Checking for Errors ...")
     if testSumPartNumbers() and testSumGearRatio():
