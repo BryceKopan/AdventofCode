@@ -20,7 +20,6 @@ def testGetCardPointValue():
     for line in testCardValues:
         testSum += getCardPointValue(line)
 
-    print(testSum)
     return testSum == testAnswer
 
 
@@ -59,9 +58,7 @@ def getNumberList(numberString):
     return numberList
 
 
-if __name__ == "__main__":
-    unitTests()
-
+def getAllCardsPointSum():
     cardDataFilePath = getFilePath()
     cardFile = open(cardDataFilePath, 'r')
 
@@ -70,4 +67,46 @@ if __name__ == "__main__":
         cardPointValue = getCardPointValue(line)
         cardPointSum += cardPointValue
 
-    print("Card Point Sum: " + str(cardPointSum))
+    return cardPointSum
+
+
+def getTotalNumberOfCards():
+    cardDataFilePath = getFilePath()
+    cardFile = open(cardDataFilePath, 'r')
+
+    numberOfSubsequentBonusCards = []
+    numberOfCards = 0
+    for line in cardFile:
+        print(numberOfSubsequentBonusCards)
+        timesToCountCard = 1
+        if len(numberOfSubsequentBonusCards) > 0:
+            timesToCountCard += numberOfSubsequentBonusCards.pop(0)
+        numberOfCards += timesToCountCard
+
+        for i in range(timesToCountCard):
+            winningNumbers, chosenNumbers = getCardNumbers(line)
+
+            correctNumbers = 0
+            for number in chosenNumbers:
+                if number in winningNumbers:
+                    correctNumbers += 1
+
+            for i in range(correctNumbers):
+                if len(numberOfSubsequentBonusCards) <= i:
+                    numberOfSubsequentBonusCards.append(0)
+                numberOfSubsequentBonusCards[i] += 1
+
+    return numberOfCards
+
+
+if __name__ == "__main__":
+    unitTests()
+
+    desiredSum = int(input("Choose 1 or 2.\n 1: Card Points Sum\n 2: Total number of cards\n"))
+    if desiredSum == 1:
+        print("Card Point Sum: " + str(getAllCardsPointSum()))
+    elif desiredSum == 2:
+        print("Total number of Cards: " + str(getTotalNumberOfCards()))
+    else:
+        print("Invalid Choice")
+
