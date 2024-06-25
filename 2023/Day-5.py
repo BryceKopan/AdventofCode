@@ -19,7 +19,16 @@ def testGetLowestSoil():
 
 def getLowestLocation(filePath):
     mapsList = loadPlantingMaps(filePath)
-    seedsList = loadSeeds(filePath)
+
+    # ask user if it's part 1 or 2
+    part = input("Is this Day 5 Part 1 or Day 5 Part 2? Enter 1 or 2 \n")
+    if int(part) == 1:
+        seedsList = loadSeedsPart1(filePath)
+    elif int(part) == 2:
+        seedsList = loadSeedsPart2(filePath)
+    else:
+        print("Invalid choice.")
+        exit(1)
 
     # a seed chain will be the numbers of each step in the mapping process [Seed number, soil number, fertilizer number,  ..., location]
     seedChains = []
@@ -55,7 +64,7 @@ def getLowestLocation(filePath):
     return lowestLocation
 
 
-def loadSeeds(filePath):
+def loadSeedsPart1(filePath):
     file = open(filePath)
     seedLine = file.readline().strip()
     lineIdentifier, seedsString = seedLine.split(':')
@@ -63,6 +72,20 @@ def loadSeeds(filePath):
     seeds = seedsString.split(' ')
     seeds = [int(seed) for seed in seeds]
     file.close()
+    return seeds
+
+
+def loadSeedsPart2(filePath):
+    rawSeeds = loadSeedsPart1(filePath)
+    seeds = []
+
+    for i in range(0, len(rawSeeds), 2):
+        seedStart = rawSeeds[i]
+        rangeLength = rawSeeds[i + 1]
+
+        for j in range(seedStart, seedStart + rangeLength):
+            seeds.append(j)
+
     return seeds
 
 
